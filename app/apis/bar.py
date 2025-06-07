@@ -5,7 +5,6 @@ from moose_lib import ConsumptionApi
 from app.ingest.models import show_pipeline, setlist_entry_pipeline
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import date
 
 
 class SongStatsParams(BaseModel):
@@ -19,8 +18,8 @@ class ShowsParams(BaseModel):
     """Parameters for show queries"""
     band_name: Optional[str] = None
     venue_name: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
     limit: int = 50
 
 
@@ -28,7 +27,7 @@ class SetlistParams(BaseModel):
     """Parameters for setlist queries"""
     show_id: Optional[str] = None
     band_name: Optional[str] = None
-    show_date: Optional[date] = None
+    show_date: Optional[str] = None
     limit: int = 100
 
 
@@ -39,8 +38,8 @@ class SongStatsResponse(BaseModel):
     total_plays: int
     avg_duration: Optional[float]
     longest_version: Optional[float]
-    first_played: date
-    last_played: date
+    first_played: str
+    last_played: str
     jam_count: int
 
 
@@ -48,7 +47,7 @@ class ShowResponse(BaseModel):
     """Response model for show queries"""
     primary_key: str
     band_name: str
-    show_date: date
+    show_date: str
     venue_name: str
     venue_city: Optional[str] = None
     venue_state: Optional[str] = None
@@ -64,7 +63,7 @@ class SetlistEntryResponse(BaseModel):
     primary_key: str
     show_id: str
     band_name: str
-    show_date: date
+    show_date: str
     set_type: str
     set_position: int
     song_name: str
