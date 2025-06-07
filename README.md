@@ -1,33 +1,115 @@
-This is a [Moose](https://www.docs.fiveonefour.com/moose) project bootstrapped with the
-[`Moose CLI`](https://github.com/514-labs/moose/tree/main/apps/framework-cli).
+# Setlist Analytics - Moose Project
 
-<a href="https://www.docs.fiveonefour.com/moose"><img src="https://raw.githubusercontent.com/514-labs/moose/main/logo-m-light.png" alt="moose logo" height="100px"></a>
+A data analytics platform for ingesting and analyzing concert setlist data, built with [Moose](https://docs.fiveonefour.com/moose).
 
-[![PyPI Version](https://img.shields.io/pypi/v/moose-cli?logo=python)](https://pypi.org/project/moose-cli/)
-[![Moose Community](https://img.shields.io/badge/slack-moose_community-purple.svg?logo=slack)](https://join.slack.com/t/moose-community/shared_invite/zt-2fjh5n3wz-cnOmM9Xe9DYAgQrNu8xKxg)
-[![Docs](https://img.shields.io/badge/quick_start-docs-blue.svg)](https://docs.fiveonefour.com/moose/)
-[![MIT license](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+## Overview
 
-[Moose](https://www.docs.fiveonefour.com/moose) is an open-source data engineering framework designed to drastically accellerate AI-enabled software developers, as you prototype and scale data-intensive features and applications.
+This project enables you to:
+- **Ingest setlist data** from various concert websites and sources
+- **Store and process** concert data in ClickHouse for fast analytics
+- **Query song statistics** like play counts, longest versions, and performance patterns
+- **Track venue and tour data** across different bands and time periods
+- **Analyze song transitions** and setlist patterns
 
-# Get started with Moose
+Starting with **Goose** setlists from [El Goose](https://elgoose.net/setlists/), the platform is designed to be extensible to other bands and data sources.
 
-Get up and running with your own Moose project in minutes by using our [Quick Start Tutorial](https://docs.getmoose.dev/getting-started/quickstart). We also have our [Docs](https://docs.getmoose.dev) where you can pick your path, learn more about Moose, and learn what types of applications can be built with Moose.
+## Data Models
 
-# Beta release
+### Show
+Represents a concert/performance with metadata:
+- Band name, date, venue information
+- Tour details and show notes
+- Verification status and source URL
 
-Moose is beta software and is in active development. Multiple public companies across the globe are using Moose in production. We’d love for you to [get your hands on it and try it out](https://docs.getmoose.dev/getting-started/quickstart). If you're interested in using Moose in production, or if you just want to chat, you can reach us at [hello@moosejs.dev](mailto:hello@moosejs.dev) or in the Moose developer community below.
+### SetlistEntry  
+Individual song performances within shows:
+- Song name, set type (Set 1, Set 2, Encore), and position
+- Duration, jam indicators, transitions
+- Performance notes and guest musicians
 
-# Community
+## Quick Start
 
-You can join the Moose community [on Slack](https://join.slack.com/t/moose-community/shared_invite/zt-2fjh5n3wz-cnOmM9Xe9DYAgQrNu8xKxg).
+1. **Start the Moose development environment:**
+   ```bash
+   moose dev
+   ```
 
-Here you can get together with other Moose developers, ask questions, give feedback, make feature requests, and interact directly with Moose maintainers.
+2. **Ingest sample data:**
+   ```bash
+   python app/scripts/sample_data.py
+   ```
 
-# Contributing
+3. **Query your data via the APIs:**
+   - **Song Statistics**: `GET /consumption/song-stats`
+   - **Show Information**: `GET /consumption/shows`  
+   - **Setlist Entries**: `GET /consumption/setlist-entries`
 
-We welcome contributions to Moose! Please check out the [contribution guidelines](https://github.com/514-labs/moose/blob/main/CONTRIBUTING.md).
+## API Endpoints
 
-# Made by 514
+### Ingestion APIs
+- `POST /ingest/Show` - Add show/concert data
+- `POST /ingest/SetlistEntry` - Add individual song performances
 
-Our mission at [fiveonefour](https://www.fiveonefour.com/) is to bring incredible developer experiences to the data stack. If you’re interested in enterprise solutions, commercial support, or design partnerships, then we’d love to chat with you: [hello@moosejs.dev](mailto:hello@moosejs.dev)
+### Consumption APIs
+- `GET /consumption/song-stats` - Song play counts, durations, jam counts
+- `GET /consumption/shows` - Show information with filtering
+- `GET /consumption/setlist-entries` - Individual song performances
+
+### Example Queries
+
+**Get most played songs:**
+```bash
+curl "http://localhost:4000/consumption/song-stats?limit=10"
+```
+
+**Get shows for a specific band:**
+```bash
+curl "http://localhost:4000/consumption/shows?band_name=Goose&limit=20"
+```
+
+**Get setlist for a specific show:**
+```bash
+curl "http://localhost:4000/consumption/setlist-entries?show_id=goose-2025-01-12-moon-palace"
+```
+
+## Analytics Views
+
+The platform automatically creates materialized views for common analytics:
+
+- **SongStats** - Aggregated song performance statistics
+- **VenueStats** - Venue performance statistics  
+- **DailyStats** - Daily setlist statistics by band
+- **SongTransitions** - Song transition patterns
+
+## Data Processing
+
+- **Stream Processing**: Real-time enrichment of setlist data
+- **Dead Letter Queues**: Error handling for failed ingestions
+- **Data Validation**: Type-safe data models with automatic validation
+- **Monitoring**: Console logging of ingestion and processing events
+
+## Extending to Other Bands
+
+The data models are designed to be band-agnostic. To add support for other bands:
+
+1. Update your ingestion scripts to parse their setlist format
+2. Use the same `Show` and `SetlistEntry` models
+3. Set the `band_name` field appropriately
+4. All analytics and queries will work across multiple bands
+
+## Architecture
+
+- **Backend**: Python with Moose framework
+- **Database**: ClickHouse for OLAP analytics
+- **Streaming**: Redpanda for real-time data processing
+- **APIs**: Auto-generated REST APIs with type validation
+
+## Development
+
+The project uses hot reloading - changes to data models are automatically applied to your local infrastructure when you save files.
+
+Monitor your data ingestion in the console, and use the built-in analytics APIs to explore your setlist data!
+
+---
+
+*Built with [Moose](https://docs.fiveonefour.com/moose) - the modern data stack for developers*

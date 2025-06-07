@@ -1,65 +1,145 @@
+# Setlist Analytics API
+# Provides endpoints for querying setlist data and analytics
 
-# This file is where you can define your API templates for consuming your data
+from moose_lib import ConsumptionApi, ConsumptionApiConfig
+from app.ingest.models import show_pipeline, setlist_entry_pipeline
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import date
 
-from moose_lib import MooseClient, ConsumptionApi
-from pydantic import BaseModel, Field
-from typing import Optional
-from app.views.bar_aggregated import barAggregatedMV
 
-# Query params are defined as Pydantic models and are validated automatically
-class QueryParams(BaseModel):
-    order_by: Optional[str] = Field(
-        default="total_rows",
-        pattern=r"^(total_rows|rows_with_text|max_text_length|total_text_length)$",
-        description="Must be one of: total_rows, rows_with_text, max_text_length, total_text_length"
-    )
-    limit: Optional[int] = Field(
-        default=5,
-        gt=0,
-        le=100,
-        description="Must be between 1 and 100"
-    )
-    start_day: Optional[int] = Field(
-        default=1,
-        gt=0,
-        le=31,
-        description="Must be between 1 and 31"
-    )
-    end_day: Optional[int] = Field(
-        default=31,
-        gt=0,
-        le=31,
-        description="Must be between 1 and 31"
-    )
+class SongStatsParams(BaseModel):
+    """Parameters for song statistics queries"""
+    song_name: Optional[str] = None
+    band_name: Optional[str] = None
+    limit: int = 50
 
-class QueryResult(BaseModel):
-    day_of_month: int
-    total_rows: int
-    rows_with_text: int
-    max_text_length: int
-    total_text_length: int
-    
-    
-## The run function is where you can define your API logic
-def run(client: MooseClient, params: QueryParams):
-    
-    start_day = params.start_day
-    end_day = params.end_day
-    limit = params.limit
-    order_by = params.order_by
-    
-    query = f"""
+
+class ShowsParams(BaseModel):
+    """Parameters for show queries"""
+    band_name: Optional[str] = None
+    venue_name: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    limit: int = 50
+
+
+class SetlistParams(BaseModel):
+    """Parameters for setlist queries"""
+    show_id: Optional[str] = None
+    band_name: Optional[str] = None
+    show_date: Optional[date] = None
+    limit: int = 100
+
+
+# API endpoint to get song play statistics
+def get_song_stats(client, params: SongStatsParams):
+    """Get statistics about song performances"""
+    query = """
     SELECT 
-        day_of_month,
-        {order_by}
-    FROM {barAggregatedMV.target_table.name} 
-    WHERE day_of_month >= {start_day} 
-    AND day_of_month <= {end_day} 
-    ORDER BY {order_by} DESC
-    LIMIT {limit}
-    """    
-   
-    return client.query.execute(query, {"order_by": order_by, "start_day": start_day, "end_day": end_day, "limit": limit})
+        song_name,
+        band_name,
+        COUNT(*) as total_plays,
+        AVG(song_duration_minutes) as avg_duration,
+        MAX(song_duration_minutes) as longest_version,
+        MIN(show_date) as first_played,
+        MAX(show_date) as last_played,
+        COUNT(CASE WHEN is_jam = true THEN 1 END) as jam_count
+    FROM {table: Identifier}
+    WHERE 1=1
+    """
+    
+    params_dict = {"table": setlist_entry_pipeline.get_table().name}
+    
+    if params.song_name:
+        query += " AND song_name ILIKE {song_name: String}"
+        params_dict["song_name"] = f"%{params.song_name}%"
+    
+    if params.band_name:
+        query += " AND band_name = {band_name: String}"
+        params_dict["band_name"] = params.band_name
+    
+    query += """
+    GROUP BY song_name, band_name
+    ORDER BY total_plays DESC
+    LIMIT {limit: Int32}
+    """
+    params_dict["limit"] = params.limit
+    
+    return client.query.execute(query, params_dict)
 
 
-bar = ConsumptionApi[QueryParams, QueryResult](name="bar", query_function=run)
+# API endpoint to get show information
+def get_shows(client, params: ShowsParams):
+    """Get show information with optional filters"""
+    query = """
+    SELECT *
+    FROM {table: Identifier}
+    WHERE 1=1
+    """
+    
+    params_dict = {"table": show_pipeline.get_table().name}
+    
+    if params.band_name:
+        query += " AND band_name = {band_name: String}"
+        params_dict["band_name"] = params.band_name
+    
+    if params.venue_name:
+        query += " AND venue_name ILIKE {venue_name: String}"
+        params_dict["venue_name"] = f"%{params.venue_name}%"
+    
+    if params.start_date:
+        query += " AND show_date >= {start_date: Date}"
+        params_dict["start_date"] = params.start_date
+    
+    if params.end_date:
+        query += " AND show_date <= {end_date: Date}"
+        params_dict["end_date"] = params.end_date
+    
+    query += " ORDER BY show_date DESC LIMIT {limit: Int32}"
+    params_dict["limit"] = params.limit
+    
+    return client.query.execute(query, params_dict)
+
+
+# API endpoint to get setlist entries
+def get_setlist_entries(client, params: SetlistParams):
+    """Get individual setlist entries with optional filters"""
+    query = """
+    SELECT *
+    FROM {table: Identifier}
+    WHERE 1=1
+    """
+    
+    params_dict = {"table": setlist_entry_pipeline.get_table().name}
+    
+    if params.show_id:
+        query += " AND show_id = {show_id: String}"
+        params_dict["show_id"] = params.show_id
+    
+    if params.band_name:
+        query += " AND band_name = {band_name: String}"
+        params_dict["band_name"] = params.band_name
+    
+    if params.show_date:
+        query += " AND show_date = {show_date: Date}"
+        params_dict["show_date"] = params.show_date
+    
+    query += " ORDER BY show_date DESC, set_position ASC LIMIT {limit: Int32}"
+    params_dict["limit"] = params.limit
+    
+    return client.query.execute(query, params_dict)
+
+
+# Create consumption APIs
+song_stats_api = ConsumptionApi[SongStatsParams]("song-stats", ConsumptionApiConfig(
+    query_function=get_song_stats
+))
+
+shows_api = ConsumptionApi[ShowsParams]("shows", ConsumptionApiConfig(
+    query_function=get_shows
+))
+
+setlist_entries_api = ConsumptionApi[SetlistParams]("setlist-entries", ConsumptionApiConfig(
+    query_function=get_setlist_entries
+))
