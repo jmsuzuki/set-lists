@@ -18,18 +18,19 @@ def enrich_setlist_entry(entry: SetlistEntry) -> SetlistEntry:
     # Basic song name standardization
     standardized_name = entry.song_name.strip()
     
-    # Detect jams from song names (common patterns)
-    is_jam = (
+    # Detect jams from song names (common patterns) - preserve original or detect new
+    is_jam = bool(
+        entry.is_jam or  # Preserve original value
         "jam" in standardized_name.lower() or
         ">" in standardized_name or
-        entry.song_duration_minutes and entry.song_duration_minutes > 20
+        (entry.song_duration_minutes is not None and entry.song_duration_minutes > 20)
     )
     
-    # Detect teases
-    is_tease = "tease" in standardized_name.lower()
+    # Detect teases - preserve original or detect new
+    is_tease = bool(entry.is_tease or "tease" in standardized_name.lower())
     
-    # Detect partial performances
-    is_partial = "partial" in standardized_name.lower() or ">" in standardized_name
+    # Detect partial performances - preserve original or detect new  
+    is_partial = bool(entry.is_partial or "partial" in standardized_name.lower() or ">" in standardized_name)
     
     # Create enriched entry
     enriched_entry = entry.model_copy()
@@ -41,14 +42,15 @@ def enrich_setlist_entry(entry: SetlistEntry) -> SetlistEntry:
     return enriched_entry
 
 
-# Transform raw setlist entries to enriched versions
-setlist_entry_pipeline.get_stream().add_transform(
-    destination=setlist_entry_pipeline.get_stream(),
-    transformation=enrich_setlist_entry,
-    config=TransformConfig(
-        dead_letter_queue=setlist_dlq
-    )
-)
+# Transform disabled to prevent infinite loop
+# The enrichment logic can be applied during ingestion instead
+# setlist_entry_pipeline.get_stream().add_transform(
+#     destination=setlist_entry_pipeline.get_stream(),
+#     transformation=enrich_setlist_entry,
+#     config=TransformConfig(
+#         dead_letter_queue=setlist_dlq
+#     )
+# )
 
 
 # Add streaming consumers for monitoring and debugging
