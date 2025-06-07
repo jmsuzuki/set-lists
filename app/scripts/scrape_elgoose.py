@@ -242,8 +242,8 @@ def main():
     
     scraper = ElGooseScraper()
     
-    # Scrape real varied setlists from el-goose.net
-    setlists = scraper.scrape_all_setlists(limit=10)  # Start with 10 to test
+    # Scrape comprehensive setlist dataset from el-goose.net
+    setlists = scraper.scrape_all_setlists(limit=50)  # Get much larger dataset
     
     if setlists:
         filename = scraper.save_to_json(setlists)

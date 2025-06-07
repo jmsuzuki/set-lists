@@ -11,6 +11,7 @@ class SetType(str, Enum):
     SET_1 = "Set 1"
     SET_2 = "Set 2" 
     SET_3 = "Set 3"
+    ONE_SET = "One Set"
     ENCORE = "Encore"
     SOUNDCHECK = "Soundcheck"
     OTHER = "Other"
