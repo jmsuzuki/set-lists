@@ -20,7 +20,7 @@ def create_sample_goose_show():
         "show_notes": "Special guest appearance with Dead Ahead",
         "verified": True,
         "source_url": "https://elgoose.net/setlists/",
-        "created_at": datetime.utcnow().isoformat()
+        "created_at": "2025-01-15T20:30:00Z"  # Use ISO format with Z timezone
     }
 
 
@@ -73,7 +73,7 @@ def create_sample_setlist_entries():
             "is_partial": False,
             "performance_notes": item.get("notes"),
             "guest_musicians": None,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": "2025-01-15T20:30:00Z"  # Use ISO format with Z timezone
         }
         entries.append(entry)
     
