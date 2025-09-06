@@ -2,6 +2,6 @@ kafka-python-ng==2.2.2
 clickhouse-connect==0.7.16
 requests==2.32.3
 beautifulsoup4==4.12.3
-moose-cli
-moose-lib
+moose-cli==0.6.33
+moose-lib==0.6.33
 faker
