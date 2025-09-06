@@ -124,8 +124,22 @@ def query_sample_data(base_url: str = "http://localhost:4000"):
         if response.status_code == 200:
             data = response.json()
             print("📊 Song Statistics:")
-            for row in data.get('data', []):
-                print(f"  • {row['song_name']}: {row['total_plays']} plays")
+            # Handle both list and dict response formats
+            if isinstance(data, list):
+                rows = data
+            elif isinstance(data, dict):
+                rows = data.get('data', [])
+            else:
+                rows = []
+            
+            if rows:
+                for row in rows:
+                    if isinstance(row, dict):
+                        song_name = row.get('song_name', 'Unknown')
+                        total_plays = row.get('total_plays', 0)
+                        print(f"  • {song_name}: {total_plays} plays")
+            else:
+                print("  No song data found")
         else:
             print(f"❌ Failed to query song stats: {response.status_code}")
     except Exception as e:

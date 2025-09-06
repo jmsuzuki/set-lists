@@ -40,3 +40,33 @@ wheels
 *.egg
 MANIFEST
 
+.cursor
+
+# Data files
+data/*.json
+!data/.gitkeep
+
+# Test and analysis files
+*_results_*.json
+*_analysis_*.json
+*_comparison_*.json
+prediction_*.json
+tonight_*.json
+backtest_*.json
+
+# Temporary analysis scripts
+analyze_*.py
+calculate_*.py
+duration_*.py
+verify_*.py
+test_*.py
+
+# Moose logs
+moose.log
+
+# Config files for other environments
+aurora.config.toml
+
+# Reports
+*.md
+!README.md
