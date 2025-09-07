@@ -1,4 +1,4 @@
-from app.ingest.models.SetlistEntry import setlist_entry_pipeline, SetlistEntry
+from app.ingest.models.SetlistEntry import SetlistEntry
 from moose_lib import DeadLetterQueue, TransformConfig
 
 
@@ -50,8 +50,8 @@ def enrich_setlist_entry(entry: SetlistEntry) -> SetlistEntry:
 #   1. Modify entries in-place instead of creating copies
 #   2. Write to a different pipeline/table for enriched entries
 #   3. Use a different enrichment strategy
-# setlist_entry_pipeline.get_stream().add_transform(
-#     destination=setlist_entry_pipeline.get_stream(),
+# SetlistEntry.add_transform(
+#     destination=SetlistEntry,
 #     transformation=enrich_setlist_entry,
 #     config=TransformConfig(
 #         dead_letter_queue=setlist_dlq

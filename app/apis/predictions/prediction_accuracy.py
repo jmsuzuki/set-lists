@@ -270,14 +270,14 @@ def get_detailed_accuracy(client, params: PredictionAccuracyParams) -> DetailedA
 
 # Create the consumption APIs
 prediction_accuracy_api = ConsumptionApi[PredictionAccuracyParams, PredictionAccuracyListResponse](
-    "predictionAccuracy",
+    "predictionsAccuracy",
     query_function=get_prediction_accuracy,
     source="SetlistEntry",
     config=EgressConfig()
 )
 
 detailed_accuracy_api = ConsumptionApi[PredictionAccuracyParams, DetailedAccuracyListResponse](
-    "detailedAccuracy",
+    "predictionsDetailedAccuracy",
     query_function=get_detailed_accuracy,
     source="SetlistEntry",
     config=EgressConfig()

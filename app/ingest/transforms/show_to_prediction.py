@@ -144,13 +144,15 @@ def show_to_prediction(show: Show) -> Optional[Prediction]:
 
 
 # Register the transform from Show to Prediction
-from app.ingest.models import show_pipeline, prediction_pipeline
+from app.ingest.models import show_pipeline
 from moose_lib import TransformConfig, DeadLetterQueue
 
 # Dead letter queue for failed predictions
 prediction_dlq = DeadLetterQueue[Show](name="ShowToPredictionDead")
 
 # Register the transform
+from app.ingest.models import show_pipeline, prediction_pipeline
+
 show_pipeline.get_stream().add_transform(
     destination=prediction_pipeline.get_stream(),
     transformation=show_to_prediction,

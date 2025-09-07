@@ -1,5 +1,6 @@
 """
 Data models for the setlist prediction system.
+Using DMv2 with pipelines for backward compatibility.
 """
 
 from app.ingest.models.Show import Show, show_pipeline

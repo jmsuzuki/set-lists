@@ -110,7 +110,7 @@ def get_prediction_metadata(client, params: PredictionMetadataParams) -> Predict
 
 # Create the consumption API
 prediction_metadata_api = ConsumptionApi[PredictionMetadataParams, PredictionMetadataListResponse](
-    "predictionMetadata",
+    "predictionsMetadata",
     query_function=get_prediction_metadata,
     source="PredictionMetadata",
     config=EgressConfig()

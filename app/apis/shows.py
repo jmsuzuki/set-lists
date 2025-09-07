@@ -3,7 +3,7 @@ Shows API
 Provides endpoints for querying show/concert information.
 """
 
-from moose_lib import ConsumptionApi, EgressConfig
+from moose_lib import Api, EgressConfig, ApiConfig
 from pydantic import BaseModel
 from typing import Optional, List
 from datetime import datetime
@@ -124,9 +124,9 @@ def get_shows(client, params: ShowsParams) -> ShowsResponse:
 
 
 # Create the consumption API
-shows_api = ConsumptionApi[ShowsParams, ShowsResponse](
-    "shows",
+shows_api = Api[ShowsParams, ShowsResponse](
+    "pipelines/shows",
     query_function=get_shows,
     source="Show",
-    config=EgressConfig()
+    config=ApiConfig()
 )

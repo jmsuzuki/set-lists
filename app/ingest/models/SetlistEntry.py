@@ -1,4 +1,4 @@
-from moose_lib import IngestPipeline, IngestPipelineConfig, OlapConfig
+from moose_lib import Key, IngestPipeline, IngestPipelineConfig, OlapConfig
 from datetime import datetime, UTC
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -17,13 +17,16 @@ class SetType(str, Enum):
 
 class SetlistEntry(BaseModel):
     """Individual song performance within a show"""
-    band_name: str = Field(..., description="Name of the performing band")
-    show_date: str = Field(..., description="Date of the show (YYYY-MM-DD format)")
+    # Key fields (used for ordering in ClickHouse)
+    band_name: Key[str] = Field(..., description="Name of the performing band")
+    song_name: Key[str] = Field(..., description="Name of the song")
+    show_date: Key[str] = Field(..., description="Date of the show (YYYY-MM-DD format)")
+    
+    # Regular fields
     venue_name: str = Field(..., description="Name of the venue")
     tour_name: Optional[str] = Field(None, description="Name of the tour if applicable")
     set_type: SetType = Field(..., description="Which set this song was played in")
     set_position: int = Field(..., description="Position within the set (1, 2, 3, etc.)")
-    song_name: str = Field(..., description="Name of the song")
     song_duration_minutes: Optional[float] = Field(None, description="Duration of the song in minutes")
     transitions_into: Optional[str] = Field(None, description="Song this transitions into (for > symbols)")
     transitions_from: Optional[str] = Field(None, description="Song this transitions from") 

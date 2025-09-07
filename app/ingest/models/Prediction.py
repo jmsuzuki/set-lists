@@ -1,4 +1,4 @@
-from moose_lib import IngestPipeline, IngestPipelineConfig, OlapConfig
+from moose_lib import Key, IngestPipeline, IngestPipelineConfig, OlapConfig
 from datetime import datetime, UTC
 from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
@@ -6,8 +6,13 @@ from pydantic import BaseModel, Field
 
 class Prediction(BaseModel):
     """A predicted show/setlist"""
-    band_name: str = Field(..., description="Name of the band being predicted for")
-    show_date: str = Field(..., description="Date of the predicted show (YYYY-MM-DD format)")
+    # Key fields (used for ordering in ClickHouse)
+    band_name: Key[str] = Field(..., description="Name of the band being predicted for")
+    algorithm_name: Key[str] = Field(..., description="Algorithm used for prediction (e.g., 'goldilocks_v8')")
+    show_date: Key[str] = Field(..., description="Date of the predicted show (YYYY-MM-DD format)")
+    generated_at: Key[str] = Field(default_factory=lambda: datetime.now(UTC).isoformat(), description="When the prediction was generated")
+    
+    # Venue information
     venue_name: Optional[str] = Field("TBD", description="Venue name if known, otherwise TBD")
     venue_city: Optional[str] = Field(None, description="City if known")
     venue_state: Optional[str] = Field(None, description="State if known")
@@ -15,9 +20,7 @@ class Prediction(BaseModel):
     tour_name: Optional[str] = Field(None, description="Tour name if applicable")
     
     # Prediction-specific fields
-    algorithm_name: str = Field(..., description="Algorithm used for prediction (e.g., 'goldilocks_v8')")
     algorithm_version: Optional[str] = Field(None, description="Version of the algorithm")
-    generated_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat(), description="When the prediction was generated")
     confidence_score: Optional[float] = Field(None, description="Overall confidence in the prediction (0.0 to 1.0)")
     
     # Analysis metadata

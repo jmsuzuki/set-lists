@@ -1,4 +1,4 @@
-from moose_lib import IngestPipeline, IngestPipelineConfig, OlapConfig
+from moose_lib import Key, IngestPipeline, IngestPipelineConfig, OlapConfig
 from datetime import datetime, UTC
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -7,16 +7,17 @@ from app.ingest.models.SetlistEntry import SetType
 
 class PredictedSetlistEntry(BaseModel):
     """Individual predicted song performance within a predicted show"""
-    band_name: str = Field(..., description="Name of the band")
-    show_date: str = Field(..., description="Date of the predicted show (YYYY-MM-DD format)")
-    algorithm_name: str = Field(..., description="Algorithm that made this prediction")
+    # Key fields (used for ordering in ClickHouse)
+    band_name: Key[str] = Field(..., description="Name of the band")
+    algorithm_name: Key[str] = Field(..., description="Algorithm that made this prediction")
+    song_name: Key[str] = Field(..., description="Name of the predicted song")
+    show_date: Key[str] = Field(..., description="Date of the predicted show (YYYY-MM-DD format)")
     
     # Position in setlist
     set_type: SetType = Field(..., description="Which set this song is predicted for")
     set_position: int = Field(..., description="Position within the set (1, 2, 3, etc.)")
     
     # Song information
-    song_name: str = Field(..., description="Name of the predicted song")
     is_cover: bool = Field(False, description="Whether this is predicted to be a cover")
     original_artist: Optional[str] = Field(None, description="Original artist if predicted as cover")
     

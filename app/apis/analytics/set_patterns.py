@@ -3,7 +3,7 @@ Set Patterns Analytics API
 Analyzes common patterns in setlists (openers, closers, encores).
 """
 
-from moose_lib import ConsumptionApi, EgressConfig
+from moose_lib import ConsumptionApi, ApiConfig
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -127,8 +127,11 @@ def get_set_patterns(client, params: SetPatternsParams) -> SetPatternListRespons
 
 # Create the consumption API
 set_patterns_api = ConsumptionApi[SetPatternsParams, SetPatternListResponse](
-    "analyticsSetPatterns",
+    "analytics/setPatterns",
     query_function=get_set_patterns,
     source="SetlistEntry",
-    config=EgressConfig()
+    config=ApiConfig(
+        mode="egress",
+        path="analytics/setPatterns"
+    )
 )

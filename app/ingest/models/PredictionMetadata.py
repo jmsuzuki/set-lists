@@ -1,4 +1,4 @@
-from moose_lib import IngestPipeline, IngestPipelineConfig, OlapConfig
+from moose_lib import Key, IngestPipeline, IngestPipelineConfig, OlapConfig
 from datetime import datetime, UTC
 from typing import Optional
 from pydantic import BaseModel, Field
@@ -15,11 +15,14 @@ class PredictionType(str, Enum):
 
 class PredictionMetadata(BaseModel):
     """Metadata about a prediction run for tracking and analysis"""
-    prediction_date: str = Field(..., description="Date the prediction was made for (YYYY-MM-DD)")
-    band_name: str = Field(..., description="Name of the band being predicted for")
-    algorithm_name: str = Field(..., description="Algorithm used (e.g., 'goldilocks_v8')")
+    # Key fields (used for ordering in ClickHouse)
+    band_name: Key[str] = Field(..., description="Name of the band being predicted for")
+    algorithm_name: Key[str] = Field(..., description="Algorithm used (e.g., 'goldilocks_v8')")
+    prediction_date: Key[str] = Field(..., description="Date the prediction was made for (YYYY-MM-DD)")
+    generated_at: Key[str] = Field(..., description="When the prediction was generated (ISO format)")
+    
+    # Algorithm metadata
     algorithm_version: str = Field(..., description="Version of the algorithm")
-    generated_at: str = Field(..., description="When the prediction was generated (ISO format)")
     data_through_date: str = Field(..., description="Latest show date in the analysis dataset")
     total_shows_analyzed: int = Field(..., description="Total number of shows analyzed for prediction")
     recent_shows_days: int = Field(90, description="Number of days of recent shows analyzed")

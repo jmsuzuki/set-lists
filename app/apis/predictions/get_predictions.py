@@ -3,7 +3,7 @@ Get Predictions API
 Retrieves predicted setlists with filtering options.
 """
 
-from moose_lib import ConsumptionApi, EgressConfig
+from moose_lib import ConsumptionApi, EgressConfig, ApiConfig
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -127,8 +127,8 @@ def get_predictions(client, params: GetPredictionsParams) -> PredictionListRespo
 
 # Create the consumption API
 get_predictions_api = ConsumptionApi[GetPredictionsParams, PredictionListResponse](
-    "getPredictionsFromSetlist",
+    "predictions/getPredictions",
     query_function=get_predictions,
     source="SetlistEntry",
-    config=EgressConfig()
+    config=ApiConfig()
 )

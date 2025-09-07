@@ -70,6 +70,6 @@ def run(client: MooseClient, params: ListAllPredictionsParams):
 
 # Register the API
 listAllPredictions_api = ConsumptionApi[ListAllPredictionsParams, PredictionItem](
-    name="listAllPredictions",
+    name="predictions",
     query_function=run
 )

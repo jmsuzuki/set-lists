@@ -178,13 +178,15 @@ def show_to_prediction_evaluation(show: Show) -> Optional[PredictionMetadata]:
 
 
 # Register the transform from Show to PredictionMetadata
-from app.ingest.models import show_pipeline, prediction_metadata_pipeline
+from app.ingest.models import show_pipeline
 from moose_lib import TransformConfig, DeadLetterQueue
 
 # Dead letter queue for failed evaluations
 evaluation_dlq = DeadLetterQueue[Show](name="ShowToEvaluationDead")
 
 # Register the transform
+from app.ingest.models import show_pipeline, prediction_metadata_pipeline
+
 show_pipeline.get_stream().add_transform(
     destination=prediction_metadata_pipeline.get_stream(),
     transformation=show_to_prediction_evaluation,
